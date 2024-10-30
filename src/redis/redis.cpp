@@ -2,6 +2,6 @@
 
 int main()
 {
-    std::cout << "TCP Test\n";
+    std::cout << "Redis Test\n";
     return 0;
 }
