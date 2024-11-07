@@ -1,47 +1,76 @@
-#include "parse.hpp"
 #include <cstring>
 #include <string>
+#include <iostream>
+#include "parse.hpp"
+
+static const std::unordered_map<std::string, MessageType> msgTypeMap = {
+    {"SET", MessageType::SET},
+    {"GET", MessageType::GET},
+    {"OK", MessageType::OK},
+    {"RESP_VAL", MessageType::RESP_VAL}};
+
+static const std::unordered_map<std::string, RESPType> respTypeMap = {
+    {"*", RESPType::ARRAY},
+    {"$", RESPType::STRING}};
+
+size_t parseSize(const std::string &data, size_t &pos)
+{
+    size_t end_pos = data.find("\r\n", pos);
+    size_t size = std::stoul(data.substr(pos, end_pos - pos));
+    pos = end_pos + 2;
+    return size;
+}
+
+std::string parseString(const std::string &data, size_t &pos, size_t size)
+{
+    std::string result = data.substr(pos, size);
+    pos += size + 2;
+    return result;
+}
+
+std::string deserializeBulkString(std::string &data, size_t &pos) // template this later
+{
+    pos++;
+    size_t bulk_size = parseSize(data, pos);
+    return parseString(data, pos, bulk_size);
+}
+
+template <>
+void deserializeRESP<RESPType::ARRAY>(std::string &data, size_t &pos, Message &msg)
+{
+    size_t array_size = parseSize(data, pos);
+
+    std::string messageType = deserializeBulkString(data, pos);
+    msg.type = static_cast<uint8_t>(msgTypeMap.at(messageType));
+
+    std::string key = deserializeBulkString(data, pos);
+    msg.key = key;
+
+    if (msg.type == 0 || msg.type == 2 || msg.type == 3)
+    {
+        std::string val = deserializeBulkString(data, pos);
+        msg.val = val;
+    }
+}
 
 Message deserialize(char *buff)
 {
     Message msg;
     std::string data(buff);
     size_t pos = 0;
+
+    char RESPType = data[pos];
     pos++;
-    size_t array_size = std::stoi(data.substr(pos, data.find("\r\n", pos) - pos));
-    pos = data.find("\r\n", pos) + 2;
-    pos++;
-    size_t type_size = std::stoi(data.substr(pos, data.find("\r\n", pos) - pos));
-    pos = data.find("\r\n", pos) + 2;
-    std::string type = data.substr(pos, type_size);
-    pos += type_size + 2;
-    if (type == "SET")
+    switch (respTypeMap.at(std::string(1, RESPType))) // maybe fix later ?
     {
-        msg.type = 0;
+    case RESPType::ARRAY:
+    {
+        deserializeRESP<RESPType::ARRAY>(data, pos, msg);
+        break;
     }
-    else if (type == "GET")
-    {
-        msg.type = 1;
-    }
-    else if (type == "OK")
-    {
-        msg.type = 2;
-    }
-    else if (type == "RESP_VAL")
-    {
-        msg.type = 3;
-    }
-    pos++;
-    size_t key_size = std::stoi(data.substr(pos, data.find("\r\n", pos) - pos));
-    pos = data.find("\r\n", pos) + 2;
-    msg.key = data.substr(pos, key_size);
-    pos += key_size + 2;
-    if (msg.type == 0 || msg.type == 2 || msg.type == 3)
-    {
-        pos++;
-        size_t val_size = std::stoi(data.substr(pos, data.find("\r\n", pos) - pos));
-        pos = data.find("\r\n", pos) + 2;
-        msg.val = data.substr(pos, val_size);
+    default:
+        std::cout << "Invalid RESPType\n";
+        break;
     }
 
     return msg;
