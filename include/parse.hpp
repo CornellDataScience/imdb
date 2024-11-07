@@ -17,7 +17,4 @@ struct Message
 };
 
 Message deserialize(char *buff);
-void parseRespArray(char *buff, Message &msg);
-std::string parseRespArray(char *buff);
-std::string parseBulkString(char *&buff);
 bool serialize(const Message &msg, char *buff);
