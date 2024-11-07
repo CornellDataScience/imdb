@@ -9,3 +9,6 @@ In-Memory Database (IMDb) is an implementation of the Redis protocol.
 - Srisha Gaur
 - Lisa Li
 - Tanvi Bhave
+- Santiago Palacios
+- Skai Nzeuton
+- Cindy Li
