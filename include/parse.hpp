@@ -20,7 +20,7 @@ enum class MessageType : uint8_t
 
 struct Message
 {
-    uint8_t type;
+    MessageType type;
     std::string key;
     std::string val;
 };
