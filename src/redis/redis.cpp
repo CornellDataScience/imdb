@@ -1,77 +1,99 @@
-#include <../include/redis.hpp>
+#include "../include/redis.hpp"
 
-class RedisNode
+RedisNode::RedisNode()
 {
-private:
-    Store kvStore;
+    kvStore = Store();
+}
 
-    V get(const K &key)
+V RedisNode::get(const K &key)
+{
+    if (auto val = kvStore.get(key); val)
     {
-        if (auto val = kvStore.get(key); val)
-        {
-            return *val;
-        }
-        else
-        {
-            std::cout << "Key not found" << std::endl;
-        }
+        return *val;
     }
-
-    bool set(const K &key, const K &val)
+    else
     {
-        return kvStore.set(key, val);
+        std::cout << "Key not found" << std::endl;
+        return "";
     }
+}
 
-    bool del(const K &key)
+bool RedisNode::set(const K &key, const V &val)
+{
+    return kvStore.set(key, val);
+}
+
+bool RedisNode::del(const K &key)
+{
+    return kvStore.del(key);
+}
+
+bool RedisNode::rename(const K &key_from, const K &key_to)
+{
+    return kvStore.rename(key_from, key_to);
+}
+
+bool RedisNode::copy(const K &key_from, const K &key_to)
+{
+    return kvStore.copy(key_from, key_to);
+}
+
+Message RedisNode::handle_client_req(const Message &req)
+{
+    switch (req.type)
     {
-        return kvStore.del(key);
-    }
-
-    bool rename(const K &key_from, const K &key_to)
+    case MessageType::GET:
     {
-        return kvStore.rename(key_from, key_to);
+        V resp_val = get(req.key);
+        std::cout << "GET";
+        return {MessageType::RESP_VAL, "", std::get<std::string>(resp_val)};
     }
-
-    bool copy(const K &key_from, const K &key_to)
+    case MessageType::SET:
     {
-        return kvStore.copy(key_from, key_to);
+        set(req.key, req.val);
+        return {MessageType::OK, req.key, req.val};
     }
-
-public:
-    RedisNode() {}
-
-    Message handle_client_req(const Message &req)
-    {
-        switch (req.type)
-        {
-        case 0:
-            get(req.key);
-        case 1:
-            set(req.key, req.val);
-            // case DEL:
-            //     del(req.key);
-            // case RENAME:
-            //     rename(req.key_from, req.key_to);
-            // case COPY:
-            //     copy(req.key_from, req.key_to);
-        }
+    // case DEL:
+    //     del(req.key);
+    // case RENAME:
+    //     rename(req.key_from, req.key_to);
+    // case COPY:
+    //     copy(req.key_from, req.key_to);
+    default:
+        return {MessageType::FAIL, "", ""};
     }
-};
+}
 
 int main()
 {
-    KVStoreWrapper kvWrapper;
+    std::cout << "Redis Test\n";
+    std::cout << "----------\n";
 
-    // Testing the wrapper
-    kvWrapper.set("username", "Alice");
-    std::cout << "Username: " << kvWrapper.get("username") << std::endl;
+    RedisNode redisNode = RedisNode();
 
-    if (kvWrapper.exists("username"))
-    {
-        std::cout << "Username exists." << std::endl;
-    }
+    std::cout << "\n\nSET TEST\n";
+    char resp_message_set[] = "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\n12345\r\n";
+    Message set = deserialize(resp_message_set);
+    std::cout << "Type: " << (int)set.type << "\n";
+    std::cout << "Key: " << set.key << "\n";
+    std::cout << "Val: " << set.val << "\n";
 
-    kvWrapper.remove("username");
+    Message set_resp = redisNode.handle_client_req(set);
+    std::cout << "Type: " << (int)set_resp.type << "\n";
+    std::cout << "Key: " << set_resp.key << "\n";
+    std::cout << "Val: " << set_resp.val << "\n";
+
+    std::cout << "\n\nGET TEST\n";
+    char resp_message_get[] = "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n";
+    Message get = deserialize(resp_message_get);
+    std::cout << "Type: " << (int)get.type << "\n";
+    std::cout << "Key: " << get.key << "\n";
+    std::cout << "Val: " << get.val << "\n";
+
+    Message get_resp = redisNode.handle_client_req(get);
+    std::cout << "Type: " << (int)get_resp.type << "\n";
+    std::cout << "Key: " << get_resp.key << "\n";
+    std::cout << "Val: " << get_resp.val << "\n";
 
     return 0;
 }

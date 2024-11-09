@@ -2,22 +2,23 @@
 
 #include <string>
 #include <iostream>
-#include <optional>  
-#include "../include/store.hpp"   
-#include "../include/parse.hpp" 
+#include <optional>
+#include "../include/store.hpp"
+#include "../include/parse.hpp"
 
-class RedisNode {
+class RedisNode
+{
 private:
-    Store kvStore; 
+    Store kvStore;
 
-    V get(K key);
-    bool set(K key, V val);
-    bool del(K key);
-    bool rename(K key_from, K key_to);
-    bool copy(K key_from, K key_to);
+    V get(const K &key);
+    bool set(const K &key, const V &val);
+    bool del(const K &key);
+    bool rename(const K &key_from, const K &key_to);
+    bool copy(const K &key_from, const K &key_to);
 
 public:
     RedisNode();
 
-    Message handle_client_req(const Message& req);
+    Message handle_client_req(const Message &req);
 };
