@@ -31,4 +31,5 @@ Message deserialize(char *buff);
 template <RESPType T>
 void deserializeRESP(std::string &data, size_t &pos, Message &msg);
 
+std::string serializeArray(const std::vector<std::string> &data);
 bool serialize(const Message &msg, char *buff);

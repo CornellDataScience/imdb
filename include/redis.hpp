@@ -19,6 +19,5 @@ private:
 
 public:
     RedisNode();
-
     Message handle_client_req(const Message &req);
 };

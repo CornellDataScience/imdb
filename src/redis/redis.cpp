@@ -45,7 +45,6 @@ Message RedisNode::handle_client_req(const Message &req)
     case MessageType::GET:
     {
         V resp_val = get(req.key);
-        std::cout << "GET";
         return {MessageType::RESP_VAL, "", std::get<std::string>(resp_val)};
     }
     case MessageType::SET:
@@ -64,36 +63,36 @@ Message RedisNode::handle_client_req(const Message &req)
     }
 }
 
-int main()
-{
-    std::cout << "Redis Test\n";
-    std::cout << "----------\n";
+// int main()
+// {
+//     std::cout << "Redis Test\n";
+//     std::cout << "----------\n";
 
-    RedisNode redisNode = RedisNode();
+//     RedisNode redisNode = RedisNode();
 
-    std::cout << "\n\nSET TEST\n";
-    char resp_message_set[] = "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\n12345\r\n";
-    Message set = deserialize(resp_message_set);
-    std::cout << "Type: " << (int)set.type << "\n";
-    std::cout << "Key: " << set.key << "\n";
-    std::cout << "Val: " << set.val << "\n";
+//     std::cout << "\n\nSET TEST\n";
+//     char resp_message_set[] = "*3\r\n$3\r\nSET\r\n$3\r\nkey\r\n$5\r\n12345\r\n";
+//     Message set = deserialize(resp_message_set);
+//     std::cout << "Type: " << (int)set.type << "\n";
+//     std::cout << "Key: " << set.key << "\n";
+//     std::cout << "Val: " << set.val << "\n";
 
-    Message set_resp = redisNode.handle_client_req(set);
-    std::cout << "Type: " << (int)set_resp.type << "\n";
-    std::cout << "Key: " << set_resp.key << "\n";
-    std::cout << "Val: " << set_resp.val << "\n";
+//     Message set_resp = redisNode.handle_client_req(set);
+//     std::cout << "Type: " << (int)set_resp.type << "\n";
+//     std::cout << "Key: " << set_resp.key << "\n";
+//     std::cout << "Val: " << set_resp.val << "\n";
 
-    std::cout << "\n\nGET TEST\n";
-    char resp_message_get[] = "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n";
-    Message get = deserialize(resp_message_get);
-    std::cout << "Type: " << (int)get.type << "\n";
-    std::cout << "Key: " << get.key << "\n";
-    std::cout << "Val: " << get.val << "\n";
+//     std::cout << "\n\nGET TEST\n";
+//     char resp_message_get[] = "*2\r\n$3\r\nGET\r\n$3\r\nkey\r\n";
+//     Message get = deserialize(resp_message_get);
+//     std::cout << "Type: " << (int)get.type << "\n";
+//     std::cout << "Key: " << get.key << "\n";
+//     std::cout << "Val: " << get.val << "\n";
 
-    Message get_resp = redisNode.handle_client_req(get);
-    std::cout << "Type: " << (int)get_resp.type << "\n";
-    std::cout << "Key: " << get_resp.key << "\n";
-    std::cout << "Val: " << get_resp.val << "\n";
+//     Message get_resp = redisNode.handle_client_req(get);
+//     std::cout << "Type: " << (int)get_resp.type << "\n";
+//     std::cout << "Key: " << get_resp.key << "\n";
+//     std::cout << "Val: " << get_resp.val << "\n";
 
-    return 0;
-}
+//     return 0;
+// }

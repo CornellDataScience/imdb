@@ -7,7 +7,8 @@ Store::Store()
 bool Store::set(K key, V val)
 {
     bool was_present = map.find(key) != map.end();
-    map.insert({key, val});
+    // map.insert({key, val});
+    map[key] = val;
     return !was_present;
 }
 
