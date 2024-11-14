@@ -2,6 +2,7 @@
 #include <string>
 #include <optional>
 #include <unordered_map>
+#include <mutex>
 
 using K = std::string;
 using V = std::variant<std::string>;
@@ -10,6 +11,7 @@ class Store
 {
 private:
     std::unordered_map<K, V> map;
+    std::recursive_mutex map_mutex;
 
 public:
     Store();
