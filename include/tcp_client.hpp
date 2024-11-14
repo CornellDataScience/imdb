@@ -1,4 +1,4 @@
-/* // TcpClient.hpp
+// TcpClient.hpp
 #ifndef TCPCLIENT_HPP
 #define TCPCLIENT_HPP
 
@@ -20,4 +20,3 @@ private:
 };
 
 #endif // TCPCLIENT_HPP
- */
