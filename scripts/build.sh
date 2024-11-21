@@ -5,5 +5,4 @@ cd ../build
 cmake ..
 cmake --build .
 
-./server & 
 ./redis
