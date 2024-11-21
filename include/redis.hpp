@@ -3,6 +3,10 @@
 #include <string>
 #include <iostream>
 #include <optional>
+#include <cstring>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 #include "../include/store.hpp"
 #include "../include/parse.hpp"
 
@@ -10,6 +14,8 @@ class RedisNode
 {
 private:
     Store kvStore;
+    bool isPrimary;
+    bool isBackup;
 
     V get(const K &key);
     bool set(const K &key, const V &val);
@@ -19,5 +25,6 @@ private:
 
 public:
     RedisNode();
+    RedisNode(bool isPrimary, bool isBackup);
     Message handle_client_req(const Message &req);
 };
