@@ -6,7 +6,6 @@
 
 RedisNode::RedisNode()
 {
-    kvStore = Store();
 }
 
 V RedisNode::get(const K &key)
