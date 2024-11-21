@@ -24,8 +24,8 @@ set(REDIS_SOURCES
 
 add_executable(server ${SERVER_SOURCES})
 add_executable(client ${CLIENT_SOURCES})
-# add_executable(redis ${REDIS_SOURCES})  
+add_executable(redis ${REDIS_SOURCES})  
 
 target_include_directories(server PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
-# target_include_directories(redis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(redis PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
