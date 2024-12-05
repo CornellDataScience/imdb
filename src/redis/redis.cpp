@@ -5,8 +5,9 @@
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-RedisNode::RedisNode()
+RedisNode::RedisNode(bool isBackup)
 {
+    this->isBackup = isBackup;
 }
 
 V RedisNode::get(const K &key)
@@ -67,8 +68,33 @@ Message RedisNode::handle_client_req(const Message &req)
     }
 }
 
-int main()
+int main(int argc, char **argv)
 {
+    bool isBackup;
+    std::string primary_ip;
+
+    if (argc == 1)
+    {
+        isBackup = false;
+    }
+    else if (argc == 3 && strcmp(argv[1], "--backup") == 0)
+    {
+        isBackup = true;
+        primary_ip = argv[2];
+    }
+    else
+    {
+        std::cout << "Usage: ./redis OR ./redis --backup <primary_ip> " << std::endl;
+        return 1;
+    }
+
+    RedisNode redisNode(isBackup);
+
+    int server_fd, new_socket;
+    struct sockaddr_in address;
+    int opt = 1;
+    int addrlen = sizeof(address);
+    const char *welcome_message = "Welcome to the C++ TCP Server!\n";
     char buffer[BUFFER_SIZE] = {0};
     TcpServer server = TcpServer(PORT);
 
