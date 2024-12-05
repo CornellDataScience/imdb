@@ -4,13 +4,14 @@
 
 #include <string>
 
-class TcpClient {
+class TcpClient
+{
 public:
-    TcpClient(const std::string& server_ip, int server_port);
+    TcpClient(const std::string &server_ip, int server_port);
     ~TcpClient();
 
     bool connectToServer();
-    void sendMessage(const std::string& message);
+    void sendMessage(const std::string &message);
     std::string receiveMessage();
 
 private:
