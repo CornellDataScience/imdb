@@ -14,7 +14,6 @@ class RedisNode
 {
 private:
     Store kvStore;
-    bool isPrimary;
     bool isBackup;
 
     V get(const K &key);
@@ -25,6 +24,6 @@ private:
 
 public:
     RedisNode();
-    RedisNode(bool isPrimary, bool isBackup);
+    RedisNode(bool isBackup);
     Message handle_client_req(const Message &req);
 };
