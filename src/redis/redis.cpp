@@ -10,6 +10,11 @@ RedisNode::RedisNode(bool isBackup)
     this->isBackup = isBackup;
 }
 
+bool RedisNode::set(const K &key, const V &val)
+{
+    return kvStore.set(key, val);
+}
+
 V RedisNode::get(const K &key)
 {
     if (auto val = kvStore.get(key); val)
@@ -21,11 +26,6 @@ V RedisNode::get(const K &key)
         std::cout << "Key not found" << std::endl;
         return "";
     }
-}
-
-bool RedisNode::set(const K &key, const V &val)
-{
-    return kvStore.set(key, val);
 }
 
 bool RedisNode::del(const K &key)

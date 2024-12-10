@@ -15,9 +15,12 @@ enum class MessageType : uint8_t
 {
     SET = 0,
     GET = 1,
-    OK = 2,
-    RESP_VAL = 3,
-    FAIL = 4
+    DEL = 2,
+    RENAME = 3,
+    COPY = 4,
+    RESP_VAL = 5,
+    OK = 6,
+    FAIL = 7
 };
 
 struct Message
