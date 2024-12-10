@@ -100,8 +100,6 @@ int main(int argc, char **argv)
 
     std::cout << "Server listening on port " << PORT << "\n";
 
-    RedisNode redisNode = RedisNode();
-
     Message message = {.type = MessageType(), .key = "h", .val = "hi"};
 
     server.receive(message, buffer);
