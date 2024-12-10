@@ -98,7 +98,24 @@ int main(int argc, char **argv)
     TcpServer server = TcpServer(PORT);
     std::cout << "Server listening on port " << PORT << "\n";
 
-    server.run();
+    char buffer[BUFFER_SIZE] = {0};
+
+    server.connect();
+
+    while (true)
+    {
+        bool received = server.receive(buffer);
+        if (received)
+        {
+            Message req = deserialize(buffer);
+            Message resp = redisNode.handle_client_req(req);
+            server.respond(resp);
+        }
+        else
+        {
+            std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
+        }
+    }
 
     return 0;
 }

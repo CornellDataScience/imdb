@@ -11,8 +11,6 @@
 
 TcpServer::TcpServer(int port)
 {
-
-    // int server_fd, new_socket;
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
@@ -46,10 +44,8 @@ TcpServer::TcpServer(int port)
     }
 }
 
-void TcpServer::run()
+void TcpServer::connect()
 {
-    char buffer[BUFFER_SIZE] = {0};
-
     new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
     if (new_socket < 0)
     {
@@ -57,31 +53,17 @@ void TcpServer::run()
         return;
     }
     std::cout << "Connection accepted\n";
+}
 
-    while (true)
+bool TcpServer::receive(char *buffer)
+{
+    int bytes_received = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
+    if (bytes_received > 0)
     {
-        // Receive data from the client
-        int bytes_received = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
-        if (bytes_received > 0)
-        {
-            buffer[bytes_received] = '\0';
-
-            Message message = deserialize(buffer);
-            respond(message);
-        }
-        else if (bytes_received == 0)
-        {
-            std::cout << "Client disconnected\n";
-            break;
-        }
-        else
-        {
-            std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
-            break;
-        }
+        buffer[bytes_received] = '\0';
+        return true;
     }
-
-    close(new_socket);
+    return false;
 }
 
 void TcpServer::respond(Message message)

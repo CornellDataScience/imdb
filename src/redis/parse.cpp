@@ -106,6 +106,21 @@ bool serialize(const Message &msg, char *buff)
         serialized += serializeArray({"GET", msg.key});
         break;
     }
+    case MessageType::DEL:
+    {
+        serialized += serializeArray({"DEL", msg.key});
+        break;
+    }
+    case MessageType::RENAME:
+    {
+        // TODO
+        break;
+    }
+    case MessageType::COPY:
+    {
+        // TODO
+        break;
+    }
     case MessageType::OK:
         serialized += serializeArray({"OK", msg.key, msg.val});
         break;

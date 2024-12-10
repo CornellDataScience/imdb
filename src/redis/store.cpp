@@ -8,7 +8,6 @@ bool Store::set(K key, V val)
 {
     const std::lock_guard<std::recursive_mutex> lock(map_mutex);
     bool was_present = map.find(key) != map.end();
-    // map.insert({key, val});
     map[key] = val;
     return !was_present;
 }
