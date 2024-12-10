@@ -3,7 +3,6 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 enum class RESPType : uint8_t
 {
