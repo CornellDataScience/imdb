@@ -90,11 +90,7 @@ int main(int argc, char **argv)
 
     RedisNode redisNode(isBackup);
 
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
-    const char *welcome_message = "Welcome to the C++ TCP Server!\n";
+    int server_fd;
     char buffer[BUFFER_SIZE] = {0};
     TcpServer server = TcpServer(PORT);
 
