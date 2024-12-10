@@ -49,8 +49,8 @@ Message RedisNode::handle_client_req(const Message &req)
     {
     case MessageType::GET:
     {
-        V resp_val = get(req.key);
-        return {MessageType::RESP_VAL, "", std::get<std::string>(resp_val)};
+        V ret_val = get(req.key);
+        return {MessageType::RETURN, "", std::get<std::string>(ret_val)};
     }
     case MessageType::SET:
     {
