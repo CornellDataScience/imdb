@@ -18,7 +18,7 @@ enum class MessageType : uint8_t
     DEL = 2,
     RENAME = 3,
     COPY = 4,
-    RESP_VAL = 5,
+    RETURN = 5,
     OK = 6,
     FAIL = 7
 };

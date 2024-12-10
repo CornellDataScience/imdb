@@ -7,8 +7,9 @@
 static const std::unordered_map<std::string, MessageType> msgTypeMap = {
     {"SET", MessageType::SET},
     {"GET", MessageType::GET},
+    {"DEL", MessageType::DEL},
     {"OK", MessageType::OK},
-    {"RESP_VAL", MessageType::RESP_VAL}};
+    {"RETURN", MessageType::RETURN}};
 
 static const std::unordered_map<char, RESPType> respTypeMap = {
     {'*', RESPType::ARRAY},
@@ -47,7 +48,8 @@ void deserializeRESP<RESPType::ARRAY>(std::string &data, size_t &pos, Message &m
     std::string key = deserializeBulkString(data, pos);
     msg.key = key;
 
-    if (msg.type != MessageType::GET)
+    // funny logic may need to think aobut this for other message types
+    if (msg.type != MessageType::GET && msg.type != MessageType::DEL)
     {
         std::string val = deserializeBulkString(data, pos);
         msg.val = val;
@@ -124,8 +126,8 @@ bool serialize(const Message &msg, char *buff)
     case MessageType::OK:
         serialized += serializeArray({"OK", msg.key, msg.val});
         break;
-    case MessageType::RESP_VAL:
-        serialized += serializeArray({"RESP_VAL", msg.key, msg.val});
+    case MessageType::RETURN:
+        serialized += serializeArray({"RETURN", msg.key, msg.val});
         break;
     }
     std::memcpy(buff, serialized.c_str(), serialized.size() + 1);
