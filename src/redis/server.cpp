@@ -46,6 +46,44 @@ TcpServer::TcpServer(int port)
     }
 }
 
+void TcpServer::run()
+{
+    char buffer[BUFFER_SIZE] = {0};
+
+    new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen);
+    if (new_socket < 0)
+    {
+        std::cerr << "Accept failed: " << strerror(errno) << std::endl;
+        return;
+    }
+    std::cout << "Connection accepted\n";
+
+    while (true)
+    {
+        // Receive data from the client
+        int bytes_received = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
+        if (bytes_received > 0)
+        {
+            buffer[bytes_received] = '\0';
+
+            Message message = deserialize(buffer);
+            respond(message);
+        }
+        else if (bytes_received == 0)
+        {
+            std::cout << "Client disconnected\n";
+            break;
+        }
+        else
+        {
+            std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
+            break;
+        }
+    }
+
+    close(new_socket);
+}
+
 void TcpServer::respond(Message message)
 {
     char resp_buff[BUFFER_SIZE] = {0};
@@ -53,41 +91,5 @@ void TcpServer::respond(Message message)
     if (send(new_socket, resp_buff, strlen(resp_buff), 0) < 0)
     {
         std::cerr << "[ERROR] Failed to send message: " << strerror(errno) << std::endl;
-    }
-}
-
-void TcpServer::receive(Message &message, char *buffer)
-{
-    while (true)
-    {
-        if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
-        {
-            std::cerr << "Accept failed: " << strerror(errno) << std::endl;
-            continue;
-        }
-        std::cout << "Connection accepted\n";
-
-        // Persistent connection with client
-        while (true)
-        {
-            int bytes_received = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
-            if (bytes_received > 0)
-            {
-                buffer[bytes_received] = '\0';
-                Message msg = deserialize(buffer);
-            }
-            else if (bytes_received == 0)
-            {
-                std::cout << "Client disconnected\n";
-                break;
-            }
-            else
-            {
-                std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
-                break;
-            }
-        }
-
-        close(new_socket);
     }
 }

@@ -57,12 +57,17 @@ Message RedisNode::handle_client_req(const Message &req)
         set(req.key, req.val);
         return {MessageType::OK, req.key, req.val};
     }
-    // case DEL:
-    //     del(req.key);
-    // case RENAME:
-    //     rename(req.key_from, req.key_to);
-    // case COPY:
-    //     copy(req.key_from, req.key_to);
+    case MessageType::DEL:
+        del(req.key);
+        return {MessageType::OK, req.key, ""};
+    case MessageType::RENAME:
+        // TODO
+        // Return a message type of OK
+        return {};
+    case MessageType::COPY:
+        // TODO
+        // Return a message type of OK
+        return {};
     default:
         return {MessageType::FAIL, "", ""};
     }
@@ -90,21 +95,10 @@ int main(int argc, char **argv)
 
     RedisNode redisNode(isBackup);
 
-    int server_fd;
-    char buffer[BUFFER_SIZE] = {0};
     TcpServer server = TcpServer(PORT);
-
     std::cout << "Server listening on port " << PORT << "\n";
 
-    Message message = {.type = MessageType(), .key = "h", .val = "hi"};
+    server.run();
 
-    server.receive(message, buffer);
-    std::cout << message.key << message.val;
-    Message message2 = {.type = MessageType(), .key = "hi back", .val = "hi back"};
-
-    server.respond(message2);
-    std::cout << message2.key << message2.val;
-
-    close(server.server_fd);
     return 0;
 }

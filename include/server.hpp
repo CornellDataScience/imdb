@@ -9,6 +9,7 @@ class TcpServer
 {
 public:
   TcpServer(int port);
+  void run();
   void receive(Message &message, char *buffer);
   void respond(Message message);
   // ~TcpServer();
