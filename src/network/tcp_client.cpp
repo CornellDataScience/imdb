@@ -13,11 +13,17 @@
 
 // awful awful awful
 static const std::unordered_map<MessageType, std::string> enumToStr = {
-    {MessageType::SET, "SET"},
-    {MessageType::GET, "GET"},
-    {MessageType::DEL, "DEL"},
-    {MessageType::OK, "OK"},
-    {MessageType::RETURN, "RETURN"}};
+{MessageType::SET, "SET"},
+{MessageType::DEL, "DEL"},
+{MessageType::GET, "GET"},
+{MessageType::OK, "OK"},
+// {MessageType::GETRANGE, "GET_RANGE"},
+{MessageType::RETURN, "RETURN"},
+{MessageType::APPEND, "APPEND"},
+{MessageType::DECRBY, "DECRBY"},
+{MessageType::GETDEL, "GETDEL"}
+
+    };
 
 std::vector<std::string> pp_msg(const Message &msg)
 {

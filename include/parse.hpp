@@ -13,14 +13,18 @@ enum class RESPType : uint8_t
 
 enum class MessageType : uint8_t
 {
-    SET = 0,
-    GET = 1,
-    DEL = 2,
-    RENAME = 3,
-    COPY = 4,
-    RETURN = 5,
-    OK = 6,
-    FAIL = 7
+    RETURN = 0,
+    OK = 1,
+    FAIL = 2,
+    SET = 3,
+    GET = 4,
+    DEL = 5,
+    RENAME = 6,
+    COPY = 7,
+    APPEND = 8,
+    // GET_RANGE = 6,
+    DECRBY = 9,
+    GETDEL = 10,
 };
 
 struct Message

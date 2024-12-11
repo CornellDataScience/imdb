@@ -6,10 +6,18 @@
 
 static const std::unordered_map<std::string, MessageType> msgTypeMap = {
     {"SET", MessageType::SET},
+    {"DEL", MessageType::DEL},
     {"GET", MessageType::GET},
     {"DEL", MessageType::DEL},
     {"OK", MessageType::OK},
-    {"RETURN", MessageType::RETURN}};
+    // {"GET_RANGE", MessageType::GETRANGE},
+    {"RETURN", MessageType::RETURN},
+    {"APPEND", MessageType::APPEND},
+    {"DECRBY", MessageType::DECRBY},
+    {"GETDEL", MessageType::GETDEL},
+    {"COPY", MessageType::COPY},
+    {"RENAME", MessageType::RENAME}
+};
 
 static const std::unordered_map<char, RESPType> respTypeMap = {
     {'*', RESPType::ARRAY},
@@ -48,8 +56,7 @@ void deserializeRESP<RESPType::ARRAY>(std::string &data, size_t &pos, Message &m
     std::string key = deserializeBulkString(data, pos);
     msg.key = key;
 
-    // funny logic may need to think aobut this for other message types
-    if (msg.type != MessageType::GET && msg.type != MessageType::DEL)
+    if (msg.type != MessageType::GET && msg.type != MessageType::DEL && msg.type != MessageType::GETDEL)
     {
         std::string val = deserializeBulkString(data, pos);
         msg.val = val;
@@ -108,28 +115,45 @@ bool serialize(const Message &msg, char *buff)
         serialized += serializeArray({"GET", msg.key});
         break;
     }
-    case MessageType::DEL:
-    {
-        serialized += serializeArray({"DEL", msg.key});
-        break;
-    }
-    case MessageType::RENAME:
-    {
-        // TODO
-        break;
-    }
-    case MessageType::COPY:
-    {
-        // TODO
-        break;
-    }
     case MessageType::OK:
+    {
         serialized += serializeArray({"OK", msg.key, msg.val});
         break;
+    }
     case MessageType::RETURN:
+    {
         serialized += serializeArray({"RETURN", msg.key, msg.val});
         break;
     }
+    case MessageType::APPEND:
+    {
+        serialized += serializeArray({"APPEND", msg.key, msg.val});
+        break;
+    }
+    // case MessageType::GETRANGE:
+    // {
+    //     serialized += serializeArray({"GETRANGE", msg.key, msg.val, msg.val});
+    //     break;
+    // }
+        
+    case MessageType::DECRBY:
+    {
+        serialized += serializeArray({"DECRBY", msg.key, msg.val});
+    }
+    case MessageType::GETDEL:
+    {
+        serialized += serializeArray({"GETDEL", msg.key});
+    }
+    case MessageType::COPY:
+    {
+        serialized += serializeArray({"COPY", msg.key, msg.val});
+    }
+    case MessageType::RENAME:
+    {
+        serialized += serializeArray({"RENAME", msg.key, msg.val});
+    }
+    };
+    
     std::memcpy(buff, serialized.c_str(), serialized.size() + 1);
     return true;
 }
