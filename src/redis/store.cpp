@@ -63,7 +63,8 @@ bool Store::append(K key, V next)
     auto opt_value = get(key);
     if (!opt_value)
     {
-        return false;
+        set(key, "");
+        opt_value = get(key);
     }
 
     V current_value = *opt_value;
