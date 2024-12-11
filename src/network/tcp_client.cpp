@@ -6,6 +6,7 @@
 #include <sstream>
 
 #include <vector>
+#include <unordered_set>
 #include "parse.hpp"
 
 #define SERVER_PORT 8080
@@ -23,6 +24,18 @@ static const std::unordered_map<MessageType, std::string> enumToStr = {
 {MessageType::DECRBY, "DECRBY"},
 {MessageType::GETDEL, "GETDEL"}
 
+    };
+
+static const std::unordered_set<std::string> supportedMethods = {
+"SET",
+"DEL",
+"GET",
+"OK",
+// {MessageType::GETRANGE, "GET_RANGE"},
+"RETURN",
+"APPEND",
+"DECRBY",
+"GETDEL"
     };
 
 std::vector<std::string> pp_msg(const Message &msg)
@@ -110,6 +123,10 @@ int main(int argc, char *argv[])
             break;
         }
         std::vector<std::string> tokens = split(input, ' ');
+        if (supportedMethods.find(tokens[0]) == supportedMethods.end()) {
+            std::cout << "you made a typo" << std::endl;
+            continue;
+        }
         std::string ser = serializeArray(tokens);
         const char *message = ser.c_str();
 
