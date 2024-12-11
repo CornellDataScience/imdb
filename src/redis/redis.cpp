@@ -1,13 +1,21 @@
 #include "redis.hpp"
 #include "parse.hpp"
+#include "server.hpp"
 
 #define PORT 8080
 #define BUFFER_SIZE 1024
 
-RedisNode::RedisNode()
+RedisNode::RedisNode(bool isBackup)
 {
+    this->isBackup = isBackup;
 }
 
+bool RedisNode::set(const K &key, const V &val)
+{
+    return kvStore.set(key, val);
+}
+
+//EXTRA SPACE REMOVE LATER
 V RedisNode::get(const K &key)
 {
     if (auto val = kvStore.get(key); val)
@@ -21,25 +29,44 @@ V RedisNode::get(const K &key)
     }
 }
 
-bool RedisNode::set(const K &key, const V &val)
-{
-    return kvStore.set(key, val);
-}
-
 bool RedisNode::del(const K &key)
 {
     return kvStore.del(key);
 }
 
-bool RedisNode::rename(const K &key_from, const K &key_to)
+bool RedisNode::rename(const K &key_from, const V &key_to)
 {
     return kvStore.rename(key_from, key_to);
 }
 
-bool RedisNode::copy(const K &key_from, const K &key_to)
+bool RedisNode::copy(const K &key_from, const V &key_to)
 {
     return kvStore.copy(key_from, key_to);
 }
+
+bool RedisNode::decrby(const K &key, const V &val)
+{
+    return kvStore.decrby(key, val);
+}
+
+bool RedisNode::append(const K &key, const V &value)
+{
+    return kvStore.append(key, value);
+}
+
+V RedisNode::getdel(const K &key)
+{
+     if (auto val = kvStore.getdel(key); val)
+    {
+        return *val;
+    }
+    else
+    {
+        std::cout << "Key not found" << std::endl;
+        return "";
+    }
+}
+
 
 Message RedisNode::handle_client_req(const Message &req)
 {
@@ -48,114 +75,99 @@ Message RedisNode::handle_client_req(const Message &req)
     case MessageType::GET:
     {
         V resp_val = get(req.key);
-        return {MessageType::RESP_VAL, "", std::get<std::string>(resp_val)};
+        return {MessageType::RETURN, std::get<std::string>(resp_val), ""}; // put the value in the key field to avoid an extra space in print
     }
     case MessageType::SET:
     {
         set(req.key, req.val);
         return {MessageType::OK, req.key, req.val};
     }
-    // case DEL:
-    //     del(req.key);
-    // case RENAME:
-    //     rename(req.key_from, req.key_to);
-    // case COPY:
-    //     copy(req.key_from, req.key_to);
+    case MessageType::DEL:
+    {
+        del(req.key);
+        return {MessageType::OK, req.key, ""};
+    }
+    case MessageType::RENAME:
+    {
+        rename(req.key, req.val);
+        V val = get(req.val);
+        return {MessageType::OK, req.val, std::get<std::string>(val)};
+    }
+    case MessageType::COPY:
+    {
+        V resp_val = req.val;
+        copy(req.key, req.val);
+        return {MessageType::OK, req.val, std::get<std::string>(resp_val)};
+    }
+    case MessageType::APPEND:
+    {
+
+        append(req.key, req.val);
+        return {MessageType::OK, req.key, std::get<std::string>(get(req.key))};
+    }
+    // Current stuff cant handle 3 inputse
+    // case MessageType::GETRANGE:
+    //     V resp_val = get(req.key);
+    //     resp_val = resp_val.substr(stoi(req.from), stoi(req.to));
+    //     return {MessageType::RETURN, "", std::get<std::string>(resp_val)};
+    case MessageType::DECRBY:
+    {
+        decrby(req.key, req.val);
+        return {MessageType::OK, req.key, std::get<std::string>(get(req.key))};
+    }
+    case MessageType::GETDEL:
+    {
+        V resp_val = getdel(req.key);
+        return {MessageType::RETURN, "", std::get<std::string>(resp_val)};
+    }
     default:
         return {MessageType::FAIL, "", ""};
     }
 }
 
-int main()
+int main(int argc, char **argv)
 {
-    int server_fd, new_socket;
-    struct sockaddr_in address;
-    int opt = 1;
-    int addrlen = sizeof(address);
-    const char *welcome_message = "Welcome to the C++ TCP Server!\n";
-    char buffer[BUFFER_SIZE] = {0};
+    bool isBackup;
+    std::string primary_ip;
 
-    // Create socket file descriptor
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
+    if (argc == 1)
     {
-        std::cerr << "Socket creation failed\n";
-        return -1;
+        isBackup = false;
+    }
+    else if (argc == 3 && strcmp(argv[1], "--backup") == 0)
+    {
+        isBackup = true;
+        primary_ip = argv[2];
+    }
+    else
+    {
+        std::cout << "Usage: ./redis OR ./redis --backup <primary_ip> " << std::endl;
+        return 1;
     }
 
-    // Forcefully attach socket to the port 8080
-    if (setsockopt(server_fd, IPPROTO_TCP, SO_REUSEADDR, &opt, sizeof(opt)))
-    {
-        std::cerr << "setsockopt failed\n";
-        close(server_fd);
-        return -1;
-    }
+    RedisNode redisNode(isBackup);
 
-    // Define the address structure
-    address.sin_family = AF_INET;         // IPv4
-    address.sin_addr.s_addr = INADDR_ANY; // Any IP address
-    address.sin_port = htons(PORT);       // Port number
-
-    // Bind the socket to the specified port
-    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
-    {
-        std::cerr << "Bind failed\n";
-        close(server_fd);
-        return -1;
-    }
-
-    // Start listening for connections
-    if (listen(server_fd, 3) < 0)
-    {
-        std::cerr << "Listen failed\n";
-        close(server_fd);
-        return -1;
-    }
-
+    TcpServer server = TcpServer(PORT);
     std::cout << "Server listening on port " << PORT << "\n";
 
-    RedisNode redisNode = RedisNode();
+    char buffer[BUFFER_SIZE] = {0};
+
+    server.connect();
 
     while (true)
     {
-        if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
+        bool received = server.receive(buffer);
+        if (received)
         {
-            std::cerr << "Accept failed: " << strerror(errno) << std::endl;
-            continue;
+            Message req = deserialize(buffer);
+            Message resp = redisNode.handle_client_req(req);
+            server.respond(resp);
         }
-        std::cout << "Connection accepted\n";
-
-        // Persistent connection with client
-        while (true)
+        else
         {
-            int bytes_received = recv(new_socket, buffer, BUFFER_SIZE - 1, 0);
-            if (bytes_received > 0)
-            {
-                buffer[bytes_received] = '\0';
-                Message msg = deserialize(buffer);
-                Message resp = redisNode.handle_client_req(msg);
-                char resp_buff[BUFFER_SIZE] = {0};
-                serialize(resp, resp_buff);
-                if (send(new_socket, resp_buff, strlen(resp_buff), 0) < 0)
-                {
-                    std::cerr << "[ERROR] Failed to send message: " << strerror(errno) << std::endl;
-                    break;
-                }
-            }
-            else if (bytes_received == 0)
-            {
-                std::cout << "Client disconnected\n";
-                break;
-            }
-            else
-            {
-                std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
-                break;
-            }
+            std::cerr << "[ERROR] recv failed: " << strerror(errno) << std::endl;
         }
-
-        close(new_socket);
     }
 
-    close(server_fd);
     return 0;
 }

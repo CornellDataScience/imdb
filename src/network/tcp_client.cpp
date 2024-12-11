@@ -13,10 +13,17 @@
 
 // awful awful awful
 static const std::unordered_map<MessageType, std::string> enumToStr = {
-    {MessageType::SET, "SET"},
-    {MessageType::GET, "GET"},
-    {MessageType::OK, "OK"},
-    {MessageType::RESP_VAL, "RESP_VAL"}};
+{MessageType::SET, "SET"},
+{MessageType::DEL, "DEL"},
+{MessageType::GET, "GET"},
+{MessageType::OK, "OK"},
+// {MessageType::GETRANGE, "GET_RANGE"},
+{MessageType::RETURN, "RETURN"},
+{MessageType::APPEND, "APPEND"},
+{MessageType::DECRBY, "DECRBY"},
+{MessageType::GETDEL, "GETDEL"}
+
+    };
 
 std::vector<std::string> pp_msg(const Message &msg)
 {
@@ -123,10 +130,7 @@ int main(int argc, char *argv[])
             std::vector<std::string> pp = pp_msg(resp);
             std::cout << "[DEBUG][RESPONSE] " << pp[0] << " " << pp[1] << " " << pp[2] << std::endl;
         }
-        // else if (bytes_received == 0)
-        // {
-        //     std::cout << "[DEBUG] Server closed the connection." << std::endl;
-        // }
+
         else
         {
             std::cerr << "[ERROR] Failed to receive message: " << strerror(errno) << std::endl;

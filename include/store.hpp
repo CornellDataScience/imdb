@@ -18,6 +18,9 @@ public:
     std::optional<V> get(K key);
     bool set(K key, V val);
     bool del(K key);
-    bool rename(K original, K next);
-    bool copy(K original, K duplicate);
+    bool rename(K original, V next);
+    bool copy(K original, V duplicate);
+    bool append(K key, V next);
+    std::optional<V> getdel(K key);
+    bool decrby(K key, V val);
 };

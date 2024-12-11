@@ -13,6 +13,7 @@ set(REDIS_SOURCES
     src/redis/parse.cpp 
     src/redis/redis.cpp
     src/redis/store.cpp
+    src/redis/server.cpp
 )
 
 add_executable(client ${CLIENT_SOURCES})
